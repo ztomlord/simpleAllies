@@ -1,10 +1,7 @@
 "use strict";
 
-const allies = [
-    'Player1',
-    'Player2',
-    'Player3',
-];
+const allies = ['DasBrain','Kalgen','Harabi','MadDokMike','Totalschaden','Trepidimous','slowmotionghost','Sneaky_Polar_Bear'];
+
 // This is the conventional segment used for team communication
 const allySegmentID = 90;
 
@@ -22,7 +19,9 @@ const EFunnelGoalType = {
 class SimpleAllies {
 
     constructor() {
-	this.myRequests = {}
+	    this.myRequests = {}; 
+        this.allySegmentData = {}; 
+        this.currentAlly = ""; 
     }
 	
     /**
@@ -38,6 +37,7 @@ class SimpleAllies {
             work: [],
             funnel: [],
             room: [],
+            barrage:[],
         };
         this.readAllySegment();
     }
@@ -50,6 +50,8 @@ class SimpleAllies {
             throw Error("Failed to find an ally for simpleAllies, you probably have none :(");
         }
         this.currentAlly = exports.allies[Game.time % exports.allies.length];
+        this.allySegmentData = {};
+
         // Make a request to read the data of the next ally in the list, for next tick
         const nextAllyName = exports.allies[(Game.time + 1) % exports.allies.length];
         RawMemory.setActiveForeignSegment(nextAllyName, exports.allySegmentID);
@@ -174,6 +176,30 @@ class SimpleAllies {
      */
     requestRoom(args) {
         this.myRequests.room.push(args);
+    }
+
+    /**
+     * Request a barrage of nukes on a specific room
+     * @param {Object} args - a request object
+     * @param {number} args.priority - 0-1 where 1 is highest consideration
+     * @param {string} args.roomName - where to target
+     * @param {number} args.startTick - when to start barrage (Based on Game.time)
+     * @param {number} args.interval - tick spacing, between nukes
+     * @param {number} args.maxNukes - how many nukes to have active in the room at one time
+     * @param {object} args.playerLaunchSlots - a map of username->tick-slot, where Game.time%25==slot
+     *                                          e.g. { bob:3, emma:4, fred:5 },
+     *                                          emma only fires when Game.time%25==4
+     *                                          fred only fires when Game.time%25==5
+     */
+    requestBarrage(args) {
+
+        if(typeof args.playerLaunchSlots === 'undefined'){
+            args.playerLaunchSlots={};
+            for(let id in this.allies){
+                args.playerLaunchSlots[ this.allies[id] ]=id;
+            }
+        }
+        this.myRequests.barrage.push(args);
     }
 }
 
