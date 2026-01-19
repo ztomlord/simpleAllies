@@ -186,6 +186,7 @@ class SimpleAllies {
      * @param {number} args.startTick - when to start barrage (Based on Game.time)
      * @param {number} args.interval - tick spacing, between nukes
      * @param {number} args.maxNukes - how many nukes to have active in the room at one time
+     * @param {number} args.modVal - divisor for Game.time modulus operation
      * @param {object} args.playerLaunchSlots - a map of username->tick-slot, where Game.time%25==slot
      *                                          e.g. { bob:3, emma:4, fred:5 },
      *                                          emma only fires when Game.time%25==4
@@ -199,6 +200,8 @@ class SimpleAllies {
                 args.playerLaunchSlots[ this.allies[id] ]=id;
             }
         }
+        args.modVal = Object.keys(args.playerLaunchSlots).length;
+
         this.myRequests.barrage.push(args);
     }
 }
